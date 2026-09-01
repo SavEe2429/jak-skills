@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Pull the skill out of the repository it is developed in and into this package.
 #
-#   ./sync.sh ../NDRS_MODBUS_SIMULATOR
+#   ./sync.sh ../my-project
 #
 # The one transformation is the script path: in a checkout the scripts live under
 # .claude/skills/, installed as a plugin they live under ${CLAUDE_PLUGIN_ROOT}. Doing

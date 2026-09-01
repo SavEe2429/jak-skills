@@ -1,0 +1,17 @@
+{
+  "name": "for-review",
+  "version": "0.1.0",
+  "description": "Read a folder or feature end to end — code and tests together — and produce one self-contained HTML page: a file inventory, six diagrams, and a numbered list of what a human should go verify. Reads what exists; runs nothing and judges nothing.",
+  "keywords": [
+    "code-review",
+    "diagram",
+    "svg",
+    "documentation",
+    "test-mapping"
+  ],
+  "author": {
+    "name": "SavEe2429",
+    "url": "https://github.com/SavEe2429"
+  },
+  "license": "MIT"
+}

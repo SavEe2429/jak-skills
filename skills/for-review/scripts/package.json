@@ -1,0 +1,9 @@
+{
+  "name": "for-review-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Tooling bundled with the for-review skill: generate, measure and assemble the diagrams.",
+  "dependencies": {
+    "playwright-core": "1.62.1"
+  }
+}

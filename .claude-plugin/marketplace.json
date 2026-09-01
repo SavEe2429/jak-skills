@@ -1,0 +1,16 @@
+{
+  "name": "for-review",
+  "metadata": {
+    "description": "One HTML page that makes an existing folder legible: what is in it, what depends on what, which behaviours the tests actually touch, and what is worth verifying next."
+  },
+  "owner": {
+    "name": "SavEe2429",
+    "url": "https://github.com/SavEe2429"
+  },
+  "plugins": [
+    {
+      "name": "for-review",
+      "source": "./"
+    }
+  ]
+}

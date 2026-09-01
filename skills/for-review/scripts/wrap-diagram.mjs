@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Wrap an SVG body in diagram-design's minimal-light template.
+// Wrap an SVG body in the minimal-light diagram template.
 //
-// diagram-design ships assets/template.html and requires every diagram to be a
-// self-contained HTML file carrying role="img", a <title> first inside the <svg>,
-// and a <desc>. That boilerplate is ~40 identical lines per diagram; authoring it
-// by hand six times is how a slug or an aria-labelledby id ends up copied wrong.
+// Every diagram is a self-contained HTML file carrying role="img", a <title> first
+// inside the <svg>, and a <desc>. That boilerplate is ~40 identical lines per diagram;
+// authoring it by hand six times is how a slug or an aria-labelledby id ends up copied
+// wrong.
 // Author the body only, and let this stamp the contract around it.
 //
 //   node wrap-diagram.mjs <body.svgpart> <out.html>

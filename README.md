@@ -82,10 +82,9 @@ oversight.
 | | | |
 |---|---|---|
 | `code-review-graph` | MCP | accelerates the scope and dead-code passes · degrades to reading |
-| `diagram-design` | plugin | its `references/type-*.md` layout rules · degrades to no layout rules |
 | `playwright-core` | npm | the screenshot pass · **hard requirement** |
 
-The first two degrade and the degradation is written onto the page, so a reader can
+`code-review-graph` degrades and the degradation is written onto the page, so a reader can
 tell a graph-backed run from a read-only one. `playwright-core` does not degrade: every
 render pass so far has found a defect that was invisible in the SVG source, and a page
 whose diagrams were never looked at has been proofread rather than checked.
@@ -94,7 +93,8 @@ whose diagrams were never looked at has been proofread rather than checked.
 
 ```text
 skills/for-review/SKILL.md                  the workflow
-skills/for-review/references/               suspicion patterns
+skills/for-review/references/rendering.md   layout rules per shape, generator specs, manifest schema
+skills/for-review/references/suspicion.md   suspicion patterns
 skills/for-review/scripts/gen-tree.mjs      TREE from a spec
 skills/for-review/scripts/gen-dependency.mjs  DEPENDENCY from a spec
 skills/for-review/scripts/_shared.mjs       the skin both generators emit

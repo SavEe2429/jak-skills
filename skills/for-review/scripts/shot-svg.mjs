@@ -2,7 +2,7 @@
 // Screenshot each diagram at its own size, so a defect is visible.
 //
 // The assembled page PNG is thousands of pixels tall; a clipped label in one
-// diagram is a few pixels there. Accepts a bare .svg or a diagram-design .html
+// diagram is a few pixels there. Accepts a bare .svg or a wrapped .html
 // page and always writes <name>.png beside it -- never over the input.
 
 import { readFileSync, writeFileSync, unlinkSync } from "node:fs";

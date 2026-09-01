@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Assemble one for-review page from a manifest, then screenshot it.
 //
-// diagram-design writes one self-contained HTML per diagram. A reader who has to
+// Each diagram is written as one self-contained HTML file. A reader who has to
 // open seven of them has lost the thing the single page was for, so this inlines
 // every SVG into one file with a nav strip, and saves a PNG so the picture can be
 // looked at rather than trusted.
@@ -12,7 +12,7 @@
 //   title       string
 //   out         output .html path, relative to the manifest
 //   focus       optional symbol the Process/Sequence chains were centred on
-//   requires    [{ name, status }] — which of the three outside tools actually ran
+//   requires    [{ name, status }] — which of the two outside tools actually ran
 //   scope       { read: [string], skipped: [{file, reason}], note?: string }
 //   sections    [{ id, heading, question, svg }] | [{ id, heading, notDrawn }]
 //   suspicions  [{ observed, why, verify }]
@@ -64,11 +64,11 @@ for (const [i, s] of (m.suspicions ?? []).entries()) {
   }
 }
 
-// The three outside tools the skill leans on. Recording which ones answered is what
+// The two outside tools the skill leans on. Recording which ones answered is what
 // lets a reader tell a graph-backed scope from a read-only one, so the field is
-// required and every name has to be one of the three -- a free-text list drifts into
+// required and every name has to be one of the two -- a free-text list drifts into
 // a changelog within two runs.
-const REQUIRED_TOOLS = ["code-review-graph", "diagram-design", "playwright-core"];
+const REQUIRED_TOOLS = ["code-review-graph", "playwright-core"];
 const declared = (m.requires ?? []).map((r) => r?.name);
 for (const name of REQUIRED_TOOLS) {
   if (!declared.includes(name)) problems.push(`requires: no entry for ${name}`);
@@ -103,11 +103,11 @@ const esc = (s) =>
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c],
   );
 
-// An <svg> from diagram-design carries its own ids. Two of them on one page collide,
+// A wrapped <svg> carries its own ids. Two of them on one page collide,
 // so each section is scoped by wrapping rather than by rewriting the svg -- rewriting
 // ids is where a renderer silently loses its markers.
 // Takes the <svg> element only, so the source may be either a bare .svg or one of
-// diagram-design's self-contained pages -- slicing to end-of-file would drag
+// the self-contained diagram pages -- slicing to end-of-file would drag
 // </body></html> in with it and the page would nest a document inside itself.
 function svgBlock(section) {
   const raw = readFileSync(resolve(base, section.svg), "utf8");

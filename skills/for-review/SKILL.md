@@ -22,19 +22,17 @@ becomes a review that has to be argued with instead of a map that can be used.
 
 ## Requires
 
-Three outside things. Check all three before step 0, and write the result of that
+Two outside things. Check both before step 0, and write the result of that
 check onto the page — a reader has to know which half of the method actually ran.
 
 ```text
 code-review-graph   MCP    ขั้น 1-4 พิงมัน  ·  ไม่มี = อ่านล้วน ช้าลง แต่ยังเดินได้
-diagram-design      plugin ไฟล์ references/type-*.md  ·  ไม่มี = ผังไม่มีกฎ layout
 playwright-core     npm    check-svg.mjs + shot-svg.mjs  ·  ไม่มี = ข้ามขั้น 7 ไม่ได้
 ```
 
 ```text
-preflight — ทั้งสามอย่าง
+preflight — ทั้งสองอย่าง
   code-review-graph   เรียกเครื่องมือ list_graph_stats  (MCP ไม่ใช่คำสั่งเชลล์)
-  diagram-design      ls ~/.claude/plugins/cache/diagram-design/*/*/skills/*/references/
   playwright-core     npm ls --prefix <scripts> playwright-core
 ```
 
@@ -47,12 +45,12 @@ every run so far, and a page whose diagrams were never looked at is a page that 
 been proofread instead of checked — so a missing browser stops the run, it does not
 degrade it. `npm install --prefix ${CLAUDE_PLUGIN_ROOT}/skills/for-review/scripts` fixes it.
 
-The other two degrade, and the degradation is recorded:
+`code-review-graph` degrades, and the degradation is recorded:
 
 ```text
 REQUIRES
   code-review-graph  ไม่ตอบ — สโคปและ dead-code มาจากการอ่านล้วน
-  diagram-design     พบ — อ่าน type-tree.md · type-sequence.md
+  playwright-core    พบ
 ```
 
 ## Input
@@ -218,8 +216,8 @@ Settle where the output goes **before** writing the first file — see **Output*
 diagrams land in that folder too, so asking afterwards means moving files that the
 manifest already points at.
 
-Read the layout rules for each shape you are about to draw before you draw it (see
-**Rendering**), then author the SVG.
+Read `references/rendering.md` before drawing — the layout rules for the shape you
+are about to draw are there, along with the generators for Tree and Dependency.
 
 ### 7. Measure every diagram, then look at what is left
 
@@ -583,136 +581,19 @@ sentence about the name; the name itself stays verbatim.
 
 ## Rendering
 
-**Tree and Dependency are generated, not authored.** Both are the same picture every
-run with different names in the boxes — rows, even spread, elbows — so they come from
-a spec and a script:
+Read `references/rendering.md` at step 6, before drawing anything. It carries the
+layout rules per shape, the generator specs, the CSS-class rule for authored SVG, and
+the manifest schema — none of it is guessable, and every rule in it was learned by
+rendering something and diffing the result.
 
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/skills/for-review/scripts/gen-tree.mjs       <spec.json> [out.html]
-node ${CLAUDE_PLUGIN_ROOT}/skills/for-review/scripts/gen-dependency.mjs <spec.json> [out.html]
-```
-
-Writing a spec costs a fraction of writing the SVG, and it removes the two defects
-that come from doing coordinate arithmetic by hand — a child hanging off the wrong
-parent's bus, and an elbow whose horizontal runs through the rank it skipped. Both
-generators put the spec's `kin` field to work, so a kinship pair is a one-word edit.
-
-The spec fields are documented at the top of each script. Two rules that are not
-obvious from them:
+The four scripts, in the order a run uses them:
 
 ```text
-label ยาวเกินกล่อง      ขยาย w  ห้ามย่อชื่อ — ชื่อที่ paste ใส่ rg ไม่ได้ แย่กว่าไม่มีป้าย
-edge ที่ต้องอ้อม         ใส่ d เองในรายการ edges  ตัวที่เหลือ generator เดินให้
+gen-tree.mjs · gen-dependency.mjs   สองภาพนี้ generate จาก spec ไม่ต้องเขียน SVG เอง
+wrap-diagram.mjs                    หุ้ม body ที่เขียนเองด้วยสัญญา accessible-SVG
+hoist-css.mjs                       ยุบ attribute ซ้ำเป็น CSS class
+build-page.mjs                      ประกอบหน้า + PNG และบังคับกฎโครงสร้าง
 ```
-
-The other four views stay hand-authored: a flowchart's shape carries meaning, a
-sequence's lifeline order is a judgement, and a generator for those would need the
-judgement as input anyway.
-
-**Author the hand-drawn ones with CSS classes, not repeated attributes.** Measured on
-three of them, attributes were 69% of the SVG bytes and the text a reader actually sees
-was 19% — `font-family="'Geist Mono', monospace"` alone cost 3,192 bytes across three
-files. Put the shared values in a `<style>` block and the render is identical:
-
-```bash
-# แปลงไฟล์ที่เขียนด้วย attribute ไปแล้ว
-node ${CLAUDE_PLUGIN_ROOT}/skills/for-review/scripts/hoist-css.mjs <file.html>
-```
-
-Two rules, both learned by rendering and diffing rather than from the spec:
-
-```text
-CSS ชนะ presentation attribute เสมอ
-    property อยู่ใน base rule ได้เมื่อทุก element มีค่าเดียวกันเท่านั้น
-    มีค่าต่างเมื่อไหร่ ต้องแตกเป็น class ต่อค่า ไม่งั้น element ที่ต่างโดนทับเงียบๆ
-
-font stack ลอกมาทั้งพวง ห้ามเติมห้ามตัด
-    เติม fallback ตัวเดียว เปลี่ยนว่า glyph ที่ font หลักไม่มี (เช่น →) ไปตกที่ font ไหน
-    ความกว้างต่าง ทุกตัวหลังจากนั้นเลื่อน
-```
-
-Verify any conversion the way it was verified here: render before and after, diff the
-PNGs, and accept nothing but zero differing pixels. Anything else means one of those
-two rules was broken.
-
-The rest of this section is about the authored ones.
-
-The `diagram-design` plugin was tried for a whole review and
-its 39-type SKILL.md cost more than it returned here: the parts that paid for
-themselves are its per-type layout rules and its self-check, and both can be used
-without loading the skill.
-
-**Read the layout rules for each shape before drawing it.** They carry the node and
-edge budgets, the port and elbow conventions, and the anti-patterns for that shape —
-none of which are in the skill file:
-
-```text
-~/.claude/plugins/cache/diagram-design/diagram-design/*/skills/diagram-design/references/
-  type-tree.md          1K    parent to children
-  type-dependency.md    4K    fan-in, ranks, badges
-  type-flowchart.md     1K    branches, shapes carry type
-  type-sequence.md      6K    lifelines, message kinds, budget of 5
-  type-architecture.md  5K    zones, elbow formula, bridge/hop
-  style-guide.md        8K    the palette and type ramp, once
-```
-
-Palette and fonts stay whatever the surrounding documents use. Matching a diagram
-system's skin matters when the picture ships to a customer; here it ships to one
-reader who has the code open beside it.
-
-Two optional borrowings, both cheap:
-
-```powershell
-# stamp the accessible-SVG contract around a body you authored
-node ${CLAUDE_PLUGIN_ROOT}/skills/for-review/scripts/wrap-diagram.mjs <body.svgpart> <out.html>
-
-# and check it: title first, desc filled, ids prefixed, single file
-python ~/.claude/plugins/cache/diagram-design/diagram-design/*/skills/diagram-design/scripts/self_check.py <out.html>
-```
-
-Then assemble and screenshot the page:
-
-```powershell
-# one-time
-npm install --prefix ${CLAUDE_PLUGIN_ROOT}/skills/for-review/scripts
-
-node ${CLAUDE_PLUGIN_ROOT}/skills/for-review/scripts/build-page.mjs <manifest.json>
-```
-
-The script inlines every SVG — from a bare `.svg` or from a self-contained diagram
-page — writes the page, and saves a PNG next to it. It also refuses to build a page
-that breaks the structural rules, so the checklist below is enforced rather than
-self-reported. The manifest is the whole input:
-
-```json
-{
-  "title":  "shown as the page h1",
-  "out":    "01.<slug>.html — relative to the manifest",
-  "focus":  "operate() — omit when no focus symbol was given",
-  "requires": [
-    { "name": "code-review-graph", "status": "พบ · ตรงกับ HEAD" },
-    { "name": "diagram-design",    "status": "พบ — อ่าน type-tree.md" },
-    { "name": "playwright-core",   "status": "พบ" }
-  ],
-  "scope":  {
-    "note":    "one line: counts, how many files have a test file and how many do not",
-    "read":    ["one entry per directory, naming every file in it"],
-    "skipped": [{ "file": "path", "reason": "why it is not source" }]
-  },
-  "sections": [
-    { "id": "tree", "heading": "TREE", "question": "the one question", "svg": "path" },
-    { "id": "sequence", "heading": "SEQUENCE", "notDrawn": "why it was not drawn" }
-  ],
-  "suspicions": [
-    { "observed": "with file:line", "why": "why it is worth a look", "verify": "command" }
-  ]
-}
-```
-
-`id` becomes the nav anchor, so keep it short and stable. A section carries either
-`svg` or `notDrawn`, never both and never neither. All three `requires` entries are
-mandatory and the names are a closed set — a run that skipped the preflight cannot
-produce a page.
 
 ## Recurring defects
 
@@ -749,7 +630,7 @@ which is why they are written down rather than remembered.
 exits 1 with the offending entry named, so these four are checked, not remembered:
 
 ```text
-[ ] preflight ran, and all three tools' status is on the page
+[ ] preflight ran, and both tools' status is on the page
 [ ] focus chain climbs exactly one hop out of the target file, never to an entry point
 [ ] focus chain descends at most three hops, and a cut chain ends in …
 [ ] focus chain, if a symbol was given, stops at the boundary of code we own
@@ -762,7 +643,7 @@ exits 1 with the offending entry named, so these four are checked, not remembere
 [ ] every claim traceable to file:line, or labelled อนุมาน
 
 enforced by the script
-[ ] all three requires entries present, named from the closed set, with a status
+[ ] both requires entries present, named from the closed set, with a status
 [ ] every drawn diagram has its one question
 [ ] every undrawn view has its reason
 [ ] every suspicion has observed, why, and a verify command
